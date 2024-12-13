@@ -1,5 +1,5 @@
 
-use std::{thread, time::Duration};
+use std::{collections::VecDeque, sync::{Arc, Mutex}, thread, time::Duration};
 
 use crate::signal::Signal;
 
@@ -15,36 +15,73 @@ const LONG_DURATION:     Duration = Duration::from_micros((800.0 * TIME_MS_TO_US
 const LOW_AMPLITUDE:    f32 = 0.1;
 const HIGH_AMPLITUDE:   f32 = 1.0;
 
+const LOW_BIT:  char = 'L';
+const HIGH_BIT: char = 'H';
+const MARK_BIT: char = 'M';
+
 pub struct WwvbAmplitudeShiftKeyingModulator {
-    signal: Signal,
+    frequency: f32,
+    bit_queue: Arc<Mutex<VecDeque<char>>>,
 }
 
 impl WwvbAmplitudeShiftKeyingModulator {
-    pub fn new(signal: Signal) -> Self {        
+    pub fn new(frequency: f32, bit_queue: Arc<Mutex<VecDeque<char>>>) -> Self {       
+
         Self {
-            signal,
+            frequency: frequency,
+            bit_queue: bit_queue
         }
     }
 
-    pub fn write_low(&self) {
-        self.signal.set_amplitude(LOW_AMPLITUDE);
+    pub fn start(self) {
+        let bit_queue_clone = Arc::clone(&self.bit_queue); // Clone Arc to share between threads
+
+        thread::spawn(move || {
+            let signal = Signal::new(self.frequency, 1.0);
+            Self::command_executor_thread(signal, bit_queue_clone);
+        });
+
+    }
+
+    pub fn command_executor_thread(signal: Signal, bit_queue: Arc<Mutex<VecDeque<char>>>) {
+        loop {
+            let bit = {
+                let mut deque = bit_queue.lock().unwrap();
+                deque.pop_front()
+            };
+
+            if let Some(bit) = bit {
+                match bit {
+                    LOW_BIT => Self::write_low(&signal),
+                    HIGH_BIT => Self::write_high(&signal),
+                    MARK_BIT => Self::write_high(&signal),
+                    _ => (),
+                }
+            }
+
+            thread::sleep(Duration::from_millis(1));
+        }
+    }
+
+    pub fn write_low(signal: &Signal) {
+        signal.set_amplitude(LOW_AMPLITUDE);
         thread::sleep(SHORT_DURATION);
-        self.signal.set_amplitude(HIGH_AMPLITUDE);
+        signal.set_amplitude(HIGH_AMPLITUDE);
         thread::sleep(LONG_DURATION);
     }
 
-    pub fn write_high(&self) {
-        self.signal.set_amplitude(LOW_AMPLITUDE);
+    pub fn write_high(signal: &Signal) {
+        signal.set_amplitude(LOW_AMPLITUDE);
         thread::sleep(MID_DURATION);
-        self.signal.set_amplitude(HIGH_AMPLITUDE);
+        signal.set_amplitude(HIGH_AMPLITUDE);
         thread::sleep(MID_DURATION);
     }
 
 
-    pub fn write_mark(&self) {
-        self.signal.set_amplitude(LOW_AMPLITUDE);
+    pub fn write_mark(signal: &Signal) {
+        signal.set_amplitude(LOW_AMPLITUDE);
         thread::sleep(LONG_DURATION);
-        self.signal.set_amplitude(HIGH_AMPLITUDE);
+        signal.set_amplitude(HIGH_AMPLITUDE);
         thread::sleep(SHORT_DURATION);
     }
 }
