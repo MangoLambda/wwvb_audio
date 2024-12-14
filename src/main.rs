@@ -1,10 +1,13 @@
-mod adjustable_sine_wave;
 mod signal;
+mod adjustable_sine_wave;
 use std::{collections::VecDeque, sync::{Arc, Mutex}, thread, time::Duration};
 
-use signal::Signal;
 mod wwvb_amplitude_shift_keying_modulator;
+use chrono::Local;
 use wwvb_amplitude_shift_keying_modulator::WwvbAmplitudeShiftKeyingModulator;
+
+mod wwvb_encoder;
+use wwvb_encoder::WwvbEncoder;
 
 fn main() {
     let frequency = 440.0;
@@ -12,6 +15,10 @@ fn main() {
     let wwvb_modulator = WwvbAmplitudeShiftKeyingModulator::new(
         frequency, Arc::clone(&queue));
     wwvb_modulator.start();
+
+    let new_wwvb_time = WwvbEncoder::encode(Local::now());
+    let mut new_wwvb_time_queue = VecDeque::from(new_wwvb_time);
+
 
     {
         let mut deque = queue.lock().unwrap();
@@ -21,8 +28,10 @@ fn main() {
     }
 
     loop {
-
-        
-        thread::sleep(Duration::from_millis(1));
+        thread::sleep(Duration::from_millis(1000));
+        {
+            let mut deque = queue.lock().unwrap();
+            deque.append(&mut new_wwvb_time_queue);
+        }
     }
 }

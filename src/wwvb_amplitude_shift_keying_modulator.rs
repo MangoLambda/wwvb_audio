@@ -54,7 +54,7 @@ impl WwvbAmplitudeShiftKeyingModulator {
                 match bit {
                     LOW_BIT => Self::write_low(&signal),
                     HIGH_BIT => Self::write_high(&signal),
-                    MARK_BIT => Self::write_high(&signal),
+                    MARK_BIT => Self::write_mark(&signal),
                     _ => (),
                 }
             }
@@ -64,6 +64,7 @@ impl WwvbAmplitudeShiftKeyingModulator {
     }
 
     pub fn write_low(signal: &Signal) {
+        println!("Writing low");
         signal.set_amplitude(LOW_AMPLITUDE);
         thread::sleep(SHORT_DURATION);
         signal.set_amplitude(HIGH_AMPLITUDE);
@@ -71,6 +72,7 @@ impl WwvbAmplitudeShiftKeyingModulator {
     }
 
     pub fn write_high(signal: &Signal) {
+        println!("Writing high");
         signal.set_amplitude(LOW_AMPLITUDE);
         thread::sleep(MID_DURATION);
         signal.set_amplitude(HIGH_AMPLITUDE);
@@ -79,6 +81,7 @@ impl WwvbAmplitudeShiftKeyingModulator {
 
 
     pub fn write_mark(signal: &Signal) {
+        println!("Writing mark");
         signal.set_amplitude(LOW_AMPLITUDE);
         thread::sleep(LONG_DURATION);
         signal.set_amplitude(HIGH_AMPLITUDE);

@@ -35,6 +35,5 @@ impl Signal {
     pub fn set_amplitude(&self, amplitude: f32) {
         let mut amp = self.amplitude.lock().unwrap();
         *amp = amplitude;
-        println!("Amplitude changed to: {}", *amp);
     }
 }
