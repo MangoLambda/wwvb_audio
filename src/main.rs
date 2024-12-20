@@ -13,6 +13,8 @@ use wwvb_amplitude_shift_keying_modulator::WwvbAmplitudeShiftKeyingModulator;
 mod wwvb_encoder;
 use wwvb_encoder::WwvbEncoder;
 
+mod bcd_encoder;
+
 fn main() {
     let queue: Arc<Mutex<VecDeque<char>>> = Arc::new(Mutex::new(VecDeque::new()));
     let wwvb_modulator = WwvbAmplitudeShiftKeyingModulator::new(Arc::clone(&queue));
