@@ -1,6 +1,17 @@
 use std::{fmt, mem};
 
-type UBcdNumber = u32;
+pub type UBcdNumber = u32;
+
+pub const BCD_200_MASK:     UBcdNumber = 1 << 9;
+pub const BCD_100_MASK:     UBcdNumber = 1 << 8;
+pub const BCD_80_MASK:      UBcdNumber = 1 << 7;
+pub const BCD_40_MASK:      UBcdNumber = 1 << 6;
+pub const BCD_20_MASK:      UBcdNumber = 1 << 5;
+pub const BCD_10_MASK:      UBcdNumber = 1 << 4;
+pub const BCD_8_MASK:       UBcdNumber = 1 << 3;
+pub const BCD_4_MASK:       UBcdNumber = 1 << 2;
+pub const BCD_2_MASK:       UBcdNumber = 1 << 1;
+pub const BCD_1_MASK:       UBcdNumber = 1 << 0;
 
 const fn power_of_10(n: usize) -> UBcdNumber {
     if n == 0 {

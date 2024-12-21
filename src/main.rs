@@ -23,18 +23,18 @@ fn main() {
     let new_wwvb_time = WwvbEncoder::encode(Local::now());
     let mut new_wwvb_time_queue = VecDeque::from(new_wwvb_time);
 
-    thread::sleep(Duration::from_secs(4));
+    //thread::sleep(Duration::from_secs(4));
 
     {
         let mut deque = queue.lock().unwrap();
-        deque.push_back('H');
+        deque.append(&mut new_wwvb_time_queue);
     }
 
     loop {
         thread::sleep(Duration::from_millis(1000));
         {
-            let mut deque = queue.lock().unwrap();
-            deque.append(&mut new_wwvb_time_queue);
+            //let mut deque = queue.lock().unwrap();
+            //deque.append(&mut new_wwvb_time_queue);
         }
     }
 }
