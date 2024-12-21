@@ -1,5 +1,5 @@
 use std::{collections::VecDeque, vec};
-use chrono::{DateTime, Datelike, Local, Timelike};
+use chrono::{Date, DateTime, Datelike, Local, NaiveDate, Timelike};
 use std::collections::HashMap;
 
 use crate::bcd_encoder::{self, UBcdNumber};
@@ -44,25 +44,31 @@ impl WwvbEncoder {
         encoded_time.push_back('L');
 
         // DUT1 sign
+        encoded_time.append(&mut Self::get_dut1_sign());
 
         // Marker
         encoded_time.push_back('M');
 
         // DUT1 value
+        encoded_time.append(&mut &mut Self::get_dut1_value());
 
         // Unused
         encoded_time.push_back('L');
 
         // Year
+        encoded_time.append(&mut Self::get_year(date_time.year()));
 
         // Unused
         encoded_time.push_back('L');
 
-        // Leap year inidicator
+        // Leap year indicator
+        encoded_time.append(&mut Self::get_leap_year_indicator(date_time.year()));
 
         // Leap second at end of month
+        encoded_time.append(&mut Self::get_leap_second_at_end_of_month());
 
         // DST status value
+        encoded_time.append(&mut Self::get_dst_status_value(&date_time));
 
         // Marker
         encoded_time.push_back('M');
@@ -134,5 +140,76 @@ impl WwvbEncoder {
         encoded_day_of_year.push_back(Self::get_symbol(&bcd_day_of_year, bcd_encoder::BCD_1_MASK));
         
         encoded_day_of_year
+    }
+
+    // TODO: hardcoded to return +
+    fn get_dut1_sign() -> VecDeque<char> {
+        let mut encoded_dut1_sign = VecDeque::new();
+
+        encoded_dut1_sign.push_back('H');
+        encoded_dut1_sign.push_back('L');
+        encoded_dut1_sign.push_back('H');
+
+        encoded_dut1_sign
+    }
+
+    // TODO: hardcoded to return 0
+    fn get_dut1_value() -> VecDeque<char> {
+        let mut encoded_dut1_value = VecDeque::new();
+
+        encoded_dut1_value.push_back('L');
+        encoded_dut1_value.push_back('L');
+        encoded_dut1_value.push_back('L');
+        encoded_dut1_value.push_back('L');
+
+        encoded_dut1_value
+    }
+
+    fn get_year(year: i32) -> VecDeque<char> {
+        let mut encoded_year = VecDeque::new();
+
+        let bcd_year = bcd_encoder::binary_to_bcd(year as u32).unwrap();
+
+        encoded_year.push_back(Self::get_symbol(&bcd_year, bcd_encoder::BCD_80_MASK));
+        encoded_year.push_back(Self::get_symbol(&bcd_year, bcd_encoder::BCD_40_MASK));
+        encoded_year.push_back(Self::get_symbol(&bcd_year, bcd_encoder::BCD_20_MASK));
+        encoded_year.push_back(Self::get_symbol(&bcd_year, bcd_encoder::BCD_10_MASK));
+
+        encoded_year.push_back('M');
+
+        encoded_year.push_back(Self::get_symbol(&bcd_year, bcd_encoder::BCD_8_MASK));
+        encoded_year.push_back(Self::get_symbol(&bcd_year, bcd_encoder::BCD_4_MASK));
+        encoded_year.push_back(Self::get_symbol(&bcd_year, bcd_encoder::BCD_2_MASK));
+        encoded_year.push_back(Self::get_symbol(&bcd_year, bcd_encoder::BCD_1_MASK));
+
+        encoded_year
+    }
+
+    fn get_leap_year_indicator(year: i32) -> VecDeque<char> {
+        let mut encoded_leap_year = VecDeque::new();
+
+        let is_leap = NaiveDate::from_ymd_opt(year, 1, 1).unwrap().leap_year();
+        encoded_leap_year.push_back(BIT_TO_SYMBOL[is_leap as usize]);
+
+        encoded_leap_year
+    }
+
+    // TODO: Currently placeholder
+    fn get_leap_second_at_end_of_month() -> VecDeque<char> {
+        let mut encoded_leap_second = VecDeque::new();
+
+        encoded_leap_second.push_back('L');
+
+        encoded_leap_second
+    }
+
+    // TODO: Currently placeholder
+    fn get_dst_status_value(date_time: &DateTime<Local>) -> VecDeque<char>{
+        let mut encoded_dst = VecDeque::new();
+
+        encoded_dst.push_back('L');
+        encoded_dst.push_back('L');
+
+        encoded_dst
     }
 }
