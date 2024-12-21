@@ -1,10 +1,6 @@
 use rodio::{source::Source, Decoder, OutputStream, Sink};
 use std::fs::File;
-use std::io::{self, Cursor, Read};
-use std::io::{BufReader, Seek};
-use std::sync::{Arc, Mutex};
-use std::thread;
-use std::time::Duration;
+use std::io::BufReader;
 
 const MINIMUM_SOUND_BUFFER_SIZE: usize = 2;
 const CARRIER_FILE_NAME: &str = "./400Hz_2s.ogg";

@@ -1,6 +1,5 @@
-use std::{collections::VecDeque, vec};
-use chrono::{Date, DateTime, Datelike, Local, NaiveDate, Timelike};
-use std::collections::HashMap;
+use std::collections::VecDeque;
+use chrono::{DateTime, Datelike, Local, NaiveDate, Timelike};
 
 use crate::bcd_encoder::{self, UBcdNumber};
 
@@ -204,7 +203,7 @@ impl WwvbEncoder {
     }
 
     // TODO: Currently placeholder
-    fn get_dst_status_value(date_time: &DateTime<Local>) -> VecDeque<char>{
+    fn get_dst_status_value(_date_time: &DateTime<Local>) -> VecDeque<char>{
         let mut encoded_dst = VecDeque::new();
 
         encoded_dst.push_back('L');
