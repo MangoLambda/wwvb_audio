@@ -2,6 +2,7 @@ use std::collections::VecDeque;
 use chrono::{DateTime, Datelike, Local, NaiveDate, Timelike};
 
 use crate::bcd_encoder::{self, UBcdNumber};
+use crate::dst::{get_dst, Dst};
 
 pub struct WwvbEncoder;
 
@@ -202,12 +203,27 @@ impl WwvbEncoder {
         encoded_leap_second
     }
 
-    // TODO: Currently placeholder
-    fn get_dst_status_value(_date_time: &DateTime<Local>) -> VecDeque<char>{
+    fn get_dst_status_value(date_time: &DateTime<Local>) -> VecDeque<char>{
         let mut encoded_dst = VecDeque::new();
 
-        encoded_dst.push_back('L');
-        encoded_dst.push_back('L');
+        match get_dst(&date_time) {
+            Dst::NotInEffect => {
+                encoded_dst.push_back('L');
+                encoded_dst.push_back('L');
+            },
+            Dst::StartsToday => {
+                encoded_dst.push_back('H');
+                encoded_dst.push_back('L');
+            },
+            Dst::InEffect => {
+                encoded_dst.push_back('H');
+                encoded_dst.push_back('H');
+            },
+            Dst::EndsToday => {
+                encoded_dst.push_back('L');
+                encoded_dst.push_back('H');
+            },
+        }
 
         encoded_dst
     }

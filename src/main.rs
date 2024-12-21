@@ -14,6 +14,7 @@ mod wwvb_encoder;
 use wwvb_encoder::WwvbEncoder;
 
 mod bcd_encoder;
+mod dst;
 
 fn main() {
     let queue: Arc<Mutex<VecDeque<char>>> = Arc::new(Mutex::new(VecDeque::new()));
